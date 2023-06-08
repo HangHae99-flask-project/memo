@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet" />
+
+    <style>
+        .memo {
+            background-color: rgb(255, 241, 152);
+        }
+        li{
+            margin: 30px;
+            
+        }
+    </style>
+</head>
+<body>
+
+<header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+    <a href="/main" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+        <svg class="bi me-2" width="40" height="32">
+            <use xlink:href="#bootstrap"></use>
+        </svg>
+        <span class="fs-4">나만의 메모 </span>
+    </a>
+
+    <ul class="nav nav-pills">
+        <li class="nav-item"><button type="button" onclick = "logout()"  class="btn btn-outline-dark">LogOut</button></li>
+        
+    </ul>
+</header>
+<aside style="float: left; margin-right: 10px;  ">
+    <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-body-tertiary" style="width: 380px;">
+        <a href="/api/create"
+           class="d-flex align-items-center flex-shrink-0 p-3 link-body-emphasis text-decoration-none border-bottom">
+            <svg class="bi pe-none me-2" width="30" height="24">
+                <use xlink:href="#bootstrap"></use>
+            </svg>
+            <span class="fs-5 fw-semibold">메모 추가</span>
+        </a>
+        <div id="read" class="list-group list-group-flush border-bottom scrollarea">
+
+        </div>
+    </div>
+</aside>
+<main class="container">
+    <div class="memo" style="width: 1200px; height: 1000px; float: left; padding: 20px;">
+        <button type="button" onclick="now()" class="btn btn-warning">일반 메모 생성</button>
+        <button type="button" onclick="future()" class="btn btn-warning">미래 메모 생성</button>
+        <div style="width: 100%; margin: 30px;">
+            <div class="col-12" style="width: 600px; display: none" id="future-memo">
+                <hr>
+                <label for="title" class="form-label">제목</label>
+                <input type="text" class="form-control" id="title" placeholder="미래에 보낼 나의 제목을 선택해주세요." required="">
+                <hr>
+                <label for="content" class="form-label">내용</label>
+                <textarea id="content" maxlength="488" cols="130" rows="10" name="text"style="resize: none; padding: 8px; margin: 20px;"></textarea>
+                <hr>
+                <input type="number" id="day" class="form-control" style="width:150px; float: left;margin-right: 10px;">일 뒤
+                <button type="button" onclick="futureSubmit()" style="margin-left: 20px;" class="btn btn-warning">미래 메모 생성</button>
+
+
+
+            </div>
+        </div>
+        <div style="width: 100%; margin: 30px;" id="now-memo">
+            <hr>
+            <label for="title-now" class="form-label">제목</label>
+            <input type="text" class="form-control" id="title-now" placeholder="메모의 제목을 입력해주세요." required="">
+            <hr>
+            <button type="button" onclick="nowSubmit()" style="margin-left: 20px;" class="btn btn-warning">메모 생성</button>
+            
+        </div>
+    </div>
+</main>
+
+<script>
+    
+    $(document).ready(function () {
+            console.log('test')
+        });
+        
+    function future(){
+        const element = document.getElementById('future-memo');
+        element.style.display = 'block';
+        const a = document.getElementById('now-memo');
+        a.style.display = 'none';
+    }
+    function now(){
+        const element = document.getElementById('future-memo');
+        element.style.display = 'none';
+        const a = document.getElementById('now-memo');
+        a.style.display = 'block';
+    }
+        function getCookie(name) {
+            var cookieString = document.cookie;
+            var cookies = cookieString.split("; ");
+            
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].split("=");
+                if (cookie[0] === name) {
+                return cookie[1];
+                }
+            }
+            
+            return null;
+        }
+
+    function futureSubmit(){
+            var myCookieValue = getCookie("userid");
+            let title = $('#title').val()
+            let content = $('#content').val();
+            let day = $('#day').val()
+
+            console.log(title+" : "+content+" : "+day)
+
+            let formData = new FormData();
+            formData.append("title", title);
+            formData.append("content", content);
+            formData.append("day", day);
+            formData.append("userid", myCookieValue);
+
+            fetch("/api/create/future", { method: "POST", body: formData }).then(res => res.json()).then(data => {
+                alert(data.msg)
+            })
+            window.location.reload()
+    }
+
+    function nowSubmit(){
+            let title = $('#title-now').val()
+            var myCookieValue = getCookie("userid");
+
+            console.log(title)
+
+            let formData = new FormData();
+            formData.append("title", title);
+            formData.append("userid", myCookieValue);
+
+            fetch("/api/create/now", { method: "POST", body: formData }).then(res => res.json()).then(data => {
+                alert(data.msg)
+            })
+            window.location.reload()
+    }
+
+    $(document).ready(function () {
+            show_memo();
+        });
+        
+        function show_memo() {
+
+            var myCookieValue = getCookie("userid");
+
+            let formData = new FormData();
+            formData.append("id_give", myCookieValue);
+
+fetch('/api/read', { method: "POST", body: formData }).then((res) => res.json()).then((data) => {
+    
+    $('#read').empty()
+    let rows = data['result']
+    let all_future = data['result1']
+    all_future.forEach((a) => {
+        let title = a['title']
+        let day = a['create_day']
+        var dateObj = new Date(day);
+        var options = {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        };
+        var formatter = new Intl.DateTimeFormat("ko-KR", options);
+        var formattedDate = formatter.format(dateObj);
+        
+        
+        let temp_html = `<button onclick="test()" class="list-group-item list-group-item-action py-3 lh-sm">
+                            <div class="d-flex w-100 align-items-center justify-content-between">
+                                <strong class="mb-1">[미래] ${title}</strong>
+                                <small class="text-body-secondary">${formattedDate}</small>
+                            </div>
+                            <div class="col-10 mb-1 small"></div>
+                        </button>`
+        $('#read').append(temp_html)
+
+    })
+
+
+    rows.forEach((a) => {
+
+        let title = a['title']
+        let day = a['create_day']
+        var dateObj = new Date(day);
+        var options = {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        };
+
+        var formatter = new Intl.DateTimeFormat("ko-KR", options);
+        var formattedDate = formatter.format(dateObj);
+
+
+
+        let temp_html = `<button disable='true' onclick="test()" class="list-group-item list-group-item-action py-3 lh-sm">
+                            <div class="d-flex w-100 align-items-center justify-content-between">
+                                <strong class="mb-1">${title}</strong>
+                                <small class="text-body-secondary">${formattedDate}</small>
+                            </div>
+                            <div class="col-10 mb-1 small"></div>
+                        </button>`
+        $('#read').append(temp_html)
+
+    })
+});
+}
+    function test(){
+        alert('메모 추가에서는 클릭을 제한하였습니다.')
+        window.location.href = '/main'
+    }
+
+function logout(){
+    const date = new Date();
+    date.setTime(date.getTime())
+    document.cookie = "userid=" +''  + ";" + "expires =" + date.toUTCString() + ";" + "path=/;";
+    window.location.href = '/'       
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+</body>
+</html>

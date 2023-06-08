@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet" />
+
+    <style>
+        .memo {
+            background-color: rgb(255, 241, 152);
+        }
+        li{
+            margin: 30px;
+            
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+        <a href="/main" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+            <svg class="bi me-2" width="40" height="32">
+                <use xlink:href="#bootstrap"></use>
+            </svg>
+            <span class="fs-4">나만의 메모 </span>
+        </a>
+
+        <ul class="nav nav-pills">
+            <li class="nav-item"><button type="button" onclick = "logout()"  class="btn btn-outline-dark">LogOut</button></li>
+        </ul>
+    </header>
+    <aside style="float: left; margin-right: 10px;  ">
+        <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-body-tertiary" style="width: 380px;">
+            <a href="/api/create"
+                class="d-flex align-items-center flex-shrink-0 p-3 link-body-emphasis text-decoration-none border-bottom">
+                <svg class="bi pe-none me-2" width="30" height="24">
+                    <use xlink:href="#bootstrap"></use>
+                </svg>
+                <span class="fs-5 fw-semibold">메모 추가</span>
+            </a>
+            <div id="read" class="list-group list-group-flush border-bottom scrollarea">
+
+            </div>
+        </div>
+    </aside>
+
+    <main class="container">
+        <div class="memo" style="width: 1200px; height: 1000px; float: left; padding: 20px;">
+            <textarea id="content" maxlength="488" cols="130" rows="10" name="text"
+                disabled="true" style="resize: none; padding: 8px; margin: 20px;background-color: rgb(255, 241, 152);">
+
+            </textarea>
+            <div id="button-create">
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+
+        $(document).ready(function () {
+            show_memo();
+        });
+
+        function test(id){ 
+            var textarea = document.getElementById("content");
+            textarea.disabled = false;
+            const a = '/api/read/'+id
+            fetch(a, { method: "POST"}).then((res) => res.json()).then((data) => {
+                textarea.value = data['content']
+            })
+            $('#button-create').empty()
+            $('#button-create').append(`
+            <button type="button" onclick="updateMemo(\'${id}'\)" style="margin-left: auto;"
+                class="btn btn-warning memo-button">메모 수정</button>
+            <button type="button" onclick="deleteMemo(\'${id}'\)" style="margin-left: auto;"
+                class="btn btn-warning memo-button">메모 삭제</button>
+            `)
+        }
+        function getCookie(name) {
+            var cookieString = document.cookie;
+            var cookies = cookieString.split("; ");
+            
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].split("=");
+                if (cookie[0] === name) {
+                return cookie[1];
+                }
+            }
+            
+            return null;
+        }
+        function show_memo() {
+            var myCookieValue = getCookie("userid");
+
+            let formData = new FormData();
+            formData.append("id_give", myCookieValue);
+    
+
+            fetch('/api/read', { method: "POST", body: formData }).then((res) => res.json()).then((data) => {
+                
+                $('#read').empty()
+                let rows = data['result']
+                let all_future = data['result1']
+                all_future.forEach((a) => {
+                    let title = a['title']
+                    let day = a['create_day']
+                    var dateObj = new Date(day);
+                    var options = {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    };
+                    var formatter = new Intl.DateTimeFormat("ko-KR", options);
+                    var formattedDate = formatter.format(dateObj);
+                    
+                    
+                    let temp_html = `<button onclick="test(\'${a['_id']}'\)" class="list-group-item list-group-item-action py-3 lh-sm">
+                                        <div class="d-flex w-100 align-items-center justify-content-between">
+                                            <strong class="mb-1">[미래] ${title}</strong>
+                                            <small class="text-body-secondary">${formattedDate}</small>
+                                        </div>
+                                        <div class="col-10 mb-1 small"></div>
+                                    </button>`
+                    $('#read').append(temp_html)
+
+                })
+
+
+                rows.forEach((a) => {
+
+                    let title = a['title']
+                    let day = a['create_day']
+                    var dateObj = new Date(day);
+                    var options = {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    };
+
+                    var formatter = new Intl.DateTimeFormat("ko-KR", options);
+                    var formattedDate = formatter.format(dateObj);
+
+
+
+                    let temp_html = `<button onclick="test(\'${a['_id']}'\)" class="list-group-item list-group-item-action py-3 lh-sm">
+                                        <div class="d-flex w-100 align-items-center justify-content-between">
+                                            <strong class="mb-1">${title}</strong>
+                                            <small class="text-body-secondary">${formattedDate}</small>
+                                        </div>
+                                        <div class="col-10 mb-1 small"></div>
+                                    </button>`
+                    $('#read').append(temp_html)
+
+                })
+            });
+        }
+
+        // 수정 버튼 클릭 이벤트 핸들러
+        function updateMemo(memoId) {
+            console.log('test : '+memoId)
+            // 메모 정보 수집
+            let updatedContent = $('#content').val(); // 수정된 내용을 가져옵니다.
+
+            // 수정 요청 데이터 생성
+            let formData = new FormData();
+            formData.append("memo_id", memoId);
+            formData.append("content", updatedContent);
+
+            // 서버에 수정 요청 보내기
+            fetch("/api/update", { method: "POST", body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.msg); // 서버 응답에 따라 적절한 처리를 수행합니다.
+                    
+                });
+        }
+
+        function deleteMemo(memoId) {
+            // 서버에 삭제 요청 보내기 
+            let formData = new FormData();
+            formData.append("memo_id", memoId);
+            // 서버에 수정 요청 보내기
+            fetch("/api/delete", { method: "POST", body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.msg); // 서버 응답에 따라 적절한 처리를 수행합니다.
+                    window.location.reload()
+                });
+        }
+
+        function logout(){
+            const date = new Date();
+            date.setTime(date.getTime())
+            document.cookie = "userid=" +''  + ";" + "expires =" + date.toUTCString() + ";" + "path=/;";
+            window.location.href = '/'       
+        }
+
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

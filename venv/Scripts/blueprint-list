@@ -1,0 +1,20 @@
+#!c:\users\ty_ty\onedrive\바탕 화면\코딩자료\python\메모 프로젝트\venv\scripts\python.exe
+
+import logging
+import optparse
+
+import blueprint
+
+parser = optparse.OptionParser('Usage: %prog [-q]')
+parser.add_option('-q', '--quiet',
+                  dest='quiet',
+                  default=False,
+                  action='store_true',
+                  help='operate quietly')
+options, args = parser.parse_args()
+
+if options.quiet:
+    logging.root.setLevel(logging.CRITICAL)
+
+for name in blueprint.Blueprint.iter():
+    print('  {0}'.format(name))
